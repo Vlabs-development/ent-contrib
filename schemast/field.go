@@ -20,6 +20,7 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"math"
 	"reflect"
 	"runtime"
 	"strconv"
@@ -43,7 +44,7 @@ func Field(desc *field.Descriptor) (*ast.CallExpr, error) {
 					Sel: ast.NewIdent("UUID"),
 				},
 			))
-	case t == field.TypeJSON:
+	case t == field.TypeJSON, t == field.TypeOther:
 		expr := "struct{}{}"
 		if desc.Info != nil && desc.Info.RType != nil {
 			expr = desc.Info.RType.Ident + "{}"
@@ -126,8 +127,17 @@ func newFieldCall(desc *field.Descriptor) *builderCall {
 
 func fromEnumType(desc *field.Descriptor) (*ast.CallExpr, error) {
 	call, err := fromSimpleType(desc)
+	builder := &builderCall{curr: call}
+
 	if err != nil {
 		return nil, err
+	}
+	if desc.Info.Ident != "" {
+		builder.method("GoType", &ast.CallExpr{
+			Fun:  ast.NewIdent(desc.Info.Ident),
+			Args: []ast.Expr{strLit("")},
+		})
+		return builder.curr, nil
 	}
 	modifier := "Values"
 	for _, pair := range desc.Enums {
@@ -143,7 +153,6 @@ func fromEnumType(desc *field.Descriptor) (*ast.CallExpr, error) {
 			args = append(args, strLit(pair.V))
 		}
 	}
-	builder := &builderCall{curr: call}
 	builder.method(modifier, args...)
 	return builder.curr, nil
 }
@@ -215,13 +224,17 @@ func fromSimpleType(desc *field.Descriptor) (*ast.CallExpr, error) {
 		}
 		builder.method("Default", expr)
 	}
+	if desc.UpdateDefault != nil {
+		expr, err := defaultExpr(desc.UpdateDefault)
+		if err != nil {
+			return nil, err
+		}
+		builder.method("UpdateDefault", expr)
+	}
 	// Unsupported features
 	var unsupported error
 	if len(desc.Validators) != 0 {
 		unsupported = combineUnsupported(unsupported, "Descriptor.Validators")
-	}
-	if desc.UpdateDefault != nil {
-		unsupported = combineUnsupported(unsupported, "Descriptor.UpdateDefault")
 	}
 	if unsupported != nil {
 		return nil, unsupported
@@ -233,6 +246,9 @@ func fieldConstructor(dsc *field.Descriptor) string {
 	cn := dsc.Info.ConstName()
 	if dsc.Info.Type == field.TypeFloat64 {
 		cn = strings.TrimSuffix(cn, "64")
+	}
+	if dsc.Info.Type == field.TypeString && dsc.Size == math.MaxInt32 {
+		cn = "Text"
 	}
 	return strings.TrimPrefix(cn, "Type")
 }
@@ -263,7 +279,8 @@ func defaultExpr(d interface{}) (ast.Expr, error) {
 		return lit, nil
 	case reflect.Func:
 		f := runtime.FuncForPC(v.Pointer()).Name()
-		parts := strings.Split(f, ".")
+		parts := strings.Split(f, "/")
+		parts = strings.Split(parts[len(parts)-1], ".")
 		if len(parts) != 2 {
 			return nil, errors.New("schemast: only selector exprs are supported for default func")
 		}

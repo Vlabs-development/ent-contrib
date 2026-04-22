@@ -16,6 +16,7 @@ package schemast
 
 import (
 	"bytes"
+	"entgo.io/contrib/entgql"
 	"go/printer"
 	"go/token"
 	"testing"
@@ -141,6 +142,78 @@ func TestAnnotation(t *testing.T) {
 			},
 			expectedOk:     false,
 			expectedErrMsg: `schemast: unknown entsql ReferenceOption: "UNSUPPORTED"`,
+		},
+		{
+			name:       "entgql annotation QueryField",
+			annot:      entgql.QueryField(),
+			expectedOk: true,
+			expected:   `entgql.QueryField()`,
+		},
+		{
+			name:       "entgql annotation Mutations with MutationCreate and MutationUpdate",
+			annot:      entgql.Mutations(entgql.MutationCreate(), entgql.MutationUpdate()),
+			expectedOk: true,
+			expected:   `entgql.Mutations(entgql.MutationCreate(), entgql.MutationUpdate())`,
+		},
+		{
+			name:       "entgql annotation Mutations with MutationCreate",
+			annot:      entgql.Mutations(entgql.MutationCreate()),
+			expectedOk: true,
+			expected:   `entgql.Mutations(entgql.MutationCreate())`,
+		},
+		{
+			name:       "entgql annotation Mutations with MutationUpdate",
+			annot:      entgql.Mutations(entgql.MutationUpdate()),
+			expectedOk: true,
+			expected:   `entgql.Mutations(entgql.MutationUpdate())`,
+		},
+		{
+			name:       "entgql annotation Skip with SkipType",
+			annot:      entgql.Skip(entgql.SkipType),
+			expectedOk: true,
+			expected:   `entgql.Skip(entgql.SkipType)`,
+		},
+		{
+			name:       "entgql annotation Skip with SkipEnumField",
+			annot:      entgql.Skip(entgql.SkipEnumField),
+			expectedOk: true,
+			expected:   `entgql.Skip(entgql.SkipEnumField)`,
+		},
+		{
+			name:       "entgql annotation Skip with SkipOrderField",
+			annot:      entgql.Skip(entgql.SkipOrderField),
+			expectedOk: true,
+			expected:   `entgql.Skip(entgql.SkipOrderField)`,
+		},
+		{
+			name:       "entgql annotation Skip with SkipWhereInput",
+			annot:      entgql.Skip(entgql.SkipWhereInput),
+			expectedOk: true,
+			expected:   `entgql.Skip(entgql.SkipWhereInput)`,
+		},
+		{
+			name:       "entgql annotation Skip with SkipMutationCreateInput",
+			annot:      entgql.Skip(entgql.SkipMutationCreateInput),
+			expectedOk: true,
+			expected:   `entgql.Skip(entgql.SkipMutationCreateInput)`,
+		},
+		{
+			name:       "entgql annotation Skip with SkipMutationUpdateInput",
+			annot:      entgql.Skip(entgql.SkipMutationUpdateInput),
+			expectedOk: true,
+			expected:   `entgql.Skip(entgql.SkipMutationUpdateInput)`,
+		},
+		{
+			name:       "entgql annotation Skip with SkipAll",
+			annot:      entgql.Skip(entgql.SkipAll),
+			expectedOk: true,
+			expected:   `entgql.Skip(entgql.SkipAll)`,
+		},
+		{
+			name:       "entgql annotation Type",
+			annot:      entgql.Type("Name"),
+			expectedOk: true,
+			expected:   `entgql.Type("Name")`,
 		},
 		{
 			name:           "unsupported annotation",

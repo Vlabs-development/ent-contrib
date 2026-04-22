@@ -342,30 +342,26 @@ func Directives(directives ...Directive) Annotation {
 	return Annotation{Directives: directives}
 }
 
-type queryFieldAnnotation struct {
-	Annotation
-}
-
 // QueryField returns an annotation for expose the field on the Query type.
-func QueryField(name ...string) queryFieldAnnotation {
+func QueryField(name ...string) Annotation {
 	a := Annotation{QueryField: &FieldConfig{}}
 	if len(name) > 0 {
 		a.QueryField.Name = name[0]
 	}
-	return queryFieldAnnotation{Annotation: a}
+	return a
 }
 
 // Directives allows you to apply directives to the field.
-func (a queryFieldAnnotation) Directives(directives ...Directive) queryFieldAnnotation {
-	a.QueryField.Directives = directives
-	return a
-}
+// func (a queryFieldAnnotation) Directives(directives ...Directive) Annotation {
+// 	a.QueryField.Directives = directives
+// 	return a
+// }
 
 // Description allows you to set the description for the field.
-func (a queryFieldAnnotation) Description(text string) queryFieldAnnotation {
-	a.QueryField.Description = text
-	return a
-}
+// func (a queryFieldAnnotation) Description(text string) queryFieldAnnotation {
+// 	a.QueryField.Description = text
+// 	return a
+// }
 
 type MutationOption interface {
 	IsCreate() bool
@@ -437,12 +433,12 @@ func (a Annotation) Merge(other schema.Annotation) schema.Annotation {
 		if other != nil {
 			ant = *other
 		}
-	case queryFieldAnnotation:
-		ant = other.Annotation
-	case *queryFieldAnnotation:
-		if other != nil {
-			ant = other.Annotation
-		}
+	// case queryFieldAnnotation:
+	// 	ant = other.Annotation
+	// case *queryFieldAnnotation:
+	// 	if other != nil {
+	// 		ant = other.Annotation
+	// 	}
 	default:
 		return a
 	}

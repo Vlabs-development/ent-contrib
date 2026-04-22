@@ -13,21 +13,21 @@
             return protoIdentNormalizeRegexp{{ $pbEnumIdent.GoName }}.ReplaceAllString(e, "_")
         }
 
-        func toProto{{ $pbEnumIdent.GoName }} (e {{ ident $entEnumIdent }}) {{ ident $pbEnumIdent }} {
-            if v, ok := {{ $pbEnumIdent.GoName }}_value[{{ qualify "strings" "ToUpper" }}({{ if not $omitPrefix }}"{{ $enumFieldPrefix }}" + {{ end }}protoIdentNormalize{{ $pbEnumIdent.GoName }}(string(e)))]; ok {
+        func toProto{{ $pbEnumIdent.GoName }} (e enums.{{ $enumType.GetName }}) {{ ident $pbEnumIdent }} {
+            if v, ok := {{ $pbEnumIdent.GoName }}_value[{{ qualify "strings" "ToUpper" }}({{ if not $omitPrefix }}"{{ $enumFieldPrefix }}" +{{ end }} protoIdentNormalize{{ $pbEnumIdent.GoName }}(string(e)))]; ok {
                 return {{ $pbEnumIdent | ident }}(v)
             }
             return {{ $pbEnumIdent | ident }}(0)
         }
 
-        func toEnt{{ $pbEnumIdent.GoName }}(e {{ ident $pbEnumIdent }}) {{ ident $entEnumIdent  }} {
+        func toEnt{{ $pbEnumIdent.GoName }}(e {{ ident $pbEnumIdent }}) enums.{{ $enumType.GetName }} {
             if v, ok := {{ $pbEnumIdent.GoName }}_name[int32(e)]; ok {
                 entVal := map[string]string{
                 {{- range .EntField.Enums }}
                     "{{ if not $omitPrefix }}{{ $enumFieldPrefix }}{{ end }}{{ protoIdentNormalize .Value }}": "{{ .Value }}",
                 {{- end }}
                 }[v]
-                return {{ ident $entEnumIdent }}(entVal)
+                return enums.{{ $enumType.GetName }}(entVal)
             }
             return ""
         }

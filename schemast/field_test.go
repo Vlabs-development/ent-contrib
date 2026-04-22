@@ -30,6 +30,9 @@ import (
 )
 
 func TestFromFieldDescriptor(t *testing.T) {
+	enumCustomGoType := field.Enum("x")
+	enumCustomGoType.Descriptor().Info.Ident = "CustomType"
+
 	tests := []struct {
 		name           string
 		field          ent.Field
@@ -67,6 +70,11 @@ func TestFromFieldDescriptor(t *testing.T) {
 			expected: `field.Time("time").Default(time.Now)`,
 		},
 		{
+			name:     "time updateDefault",
+			field:    field.Time("time").UpdateDefault(time.Now),
+			expected: `field.Time("time").UpdateDefault(time.Now)`,
+		},
+		{
 			name: "time anonymous",
 			field: field.Time("time").Default(func() time.Time {
 				return time.Time{}
@@ -90,6 +98,16 @@ func TestFromFieldDescriptor(t *testing.T) {
 			expected: `field.Enum("x").NamedValues("a", "b")`,
 		},
 		{
+			name:     "enums:named values",
+			field:    field.Enum("x").NamedValues("a", "b"),
+			expected: `field.Enum("x").NamedValues("a", "b")`,
+		},
+		{
+			name:     "enums GoType",
+			field:    enumCustomGoType,
+			expected: `field.Enum("x").GoType(CustomType(""))`,
+		},
+		{
 			name:     "storage key",
 			field:    field.String("x").StorageKey("s"),
 			expected: `field.String("x").StorageKey("s")`,
@@ -110,6 +128,11 @@ func TestFromFieldDescriptor(t *testing.T) {
 			name:     "default:string",
 			field:    field.String("x").Default("x"),
 			expected: `field.String("x").Default("x")`,
+		},
+		{
+			name:     "Text",
+			field:    field.Text("x"),
+			expected: `field.Text("x")`,
 		},
 		{
 			name:     "default:int",
@@ -158,6 +181,16 @@ func TestFromFieldDescriptor(t *testing.T) {
 			field:    field.UUID("x", uuid.UUID{}),
 			expected: `field.UUID("x", uuid.UUID{})`,
 		},
+		{
+			name:     "uuid",
+			field:    field.UUID("x", uuid.UUID{}).Default(uuid.New),
+			expected: `field.UUID("x", uuid.UUID{}).Default(uuid.New)`,
+		},
+		{
+			name:     "uuid",
+			field:    field.UUID("x", uuid.UUID{}).Default(time.Now),
+			expected: `field.UUID("x", uuid.UUID{}).Default(time.Now)`,
+		},
 	}
 
 	for _, tt := range tests {
@@ -175,6 +208,25 @@ func TestFromFieldDescriptor(t *testing.T) {
 			require.EqualValues(t, tt.expected, buf.String())
 		})
 	}
+}
+
+type CustomType string
+
+const (
+	TypeOne   CustomType = "type_one"
+	TypeTwo   CustomType = "type_two"
+	TypeThree CustomType = "type_three"
+)
+
+func (g CustomType) Values() (s []string) {
+	for _, e := range []CustomType{
+		TypeOne,
+		TypeTwo,
+		TypeThree,
+	} {
+		s = append(s, string(e))
+	}
+	return
 }
 
 type annotation string
