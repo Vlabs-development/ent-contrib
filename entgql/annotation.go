@@ -351,17 +351,14 @@ func QueryField(name ...string) Annotation {
 	return a
 }
 
-// Directives allows you to apply directives to the field.
-// func (a queryFieldAnnotation) Directives(directives ...Directive) Annotation {
-// 	a.QueryField.Directives = directives
-// 	return a
-// }
-
-// Description allows you to set the description for the field.
-// func (a queryFieldAnnotation) Description(text string) queryFieldAnnotation {
-// 	a.QueryField.Description = text
-// 	return a
-// }
+// Description sets the description on the QueryField configuration of the annotation.
+// Has no effect if the annotation was not produced by QueryField.
+func (a Annotation) Description(text string) Annotation {
+	if a.QueryField != nil {
+		a.QueryField.Description = text
+	}
+	return a
+}
 
 type MutationOption interface {
 	IsCreate() bool

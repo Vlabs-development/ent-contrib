@@ -174,11 +174,11 @@ func WithCategoryOrder(order *CategoryOrder) CategoryPaginateOption {
 	}
 	o := *order
 	return func(pager *categoryPager) error {
-		if err := o.Direction.Validate(); err != nil {
+		if err := order.Direction.Validate(); err != nil {
 			return err
 		}
-		if o.Field == nil {
-			o.Field = DefaultCategoryOrder.Field
+		if order.Field == nil {
+			order.Field = DefaultCategoryOrder.Field
 		}
 		pager.order = &o
 		return nil
@@ -488,11 +488,11 @@ func WithTodoOrder(order *TodoOrder) TodoPaginateOption {
 	}
 	o := *order
 	return func(pager *todoPager) error {
-		if err := o.Direction.Validate(); err != nil {
+		if err := order.Direction.Validate(); err != nil {
 			return err
 		}
-		if o.Field == nil {
-			o.Field = DefaultTodoOrder.Field
+		if order.Field == nil {
+			order.Field = DefaultTodoOrder.Field
 		}
 		pager.order = &o
 		return nil
