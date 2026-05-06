@@ -179,11 +179,11 @@ func WithBillProductOrder(order *BillProductOrder) BillProductPaginateOption {
 	}
 	o := *order
 	return func(pager *billproductPager) error {
-		if err := o.Direction.Validate(); err != nil {
+		if err := order.Direction.Validate(); err != nil {
 			return err
 		}
-		if o.Field == nil {
-			o.Field = DefaultBillProductOrder.Field
+		if order.Field == nil {
+			order.Field = DefaultBillProductOrder.Field
 		}
 		pager.order = &o
 		return nil
@@ -424,8 +424,8 @@ type CategoryPaginateOption func(*categoryPager) error
 // WithCategoryOrder configures pagination ordering.
 func WithCategoryOrder(order []*CategoryOrder) CategoryPaginateOption {
 	return func(pager *categoryPager) error {
-		for _, o := range order {
-			if err := o.Direction.Validate(); err != nil {
+		for _, order := range order {
+			if err := order.Direction.Validate(); err != nil {
 				return err
 			}
 		}
@@ -458,9 +458,9 @@ func newCategoryPager(opts []CategoryPaginateOption, reverse bool) (*categoryPag
 			return nil, err
 		}
 	}
-	for i, o := range pager.order {
-		if i > 0 && o.Field == pager.order[i-1].Field {
-			return nil, fmt.Errorf("duplicate order direction %q", o.Direction)
+	for i, order := range pager.order {
+		if i > 0 && order.Field == pager.order[i-1].Field {
+			return nil, fmt.Errorf("duplicate order direction %q", order.Direction)
 		}
 	}
 	return pager, nil
@@ -487,9 +487,9 @@ func (p *categoryPager) applyCursors(query *CategoryQuery, after, before *Cursor
 		idDirection = entgql.OrderDirectionDesc
 	}
 	fields, directions := make([]string, 0, len(p.order)), make([]OrderDirection, 0, len(p.order))
-	for _, o := range p.order {
-		fields = append(fields, o.Field.column)
-		direction := o.Direction
+	for _, order := range p.order {
+		fields = append(fields, order.Field.column)
+		direction := order.Direction
 		if p.reverse {
 			direction = direction.Reverse()
 		}
@@ -512,20 +512,20 @@ func (p *categoryPager) applyCursors(query *CategoryQuery, after, before *Cursor
 
 func (p *categoryPager) applyOrder(query *CategoryQuery) *CategoryQuery {
 	var defaultOrdered bool
-	for _, o := range p.order {
-		direction := o.Direction
+	for _, order := range p.order {
+		direction := order.Direction
 		if p.reverse {
 			direction = direction.Reverse()
 		}
-		query = query.Order(o.Field.toTerm(direction.OrderTermOption()))
-		if o.Field.column == DefaultCategoryOrder.Field.column {
+		query = query.Order(order.Field.toTerm(direction.OrderTermOption()))
+		if order.Field.column == DefaultCategoryOrder.Field.column {
 			defaultOrdered = true
 		}
-		switch o.Field.column {
+		switch order.Field.column {
 		case CategoryOrderFieldTodosCount.column:
 		default:
 			if len(query.ctx.Fields) > 0 {
-				query.ctx.AppendFieldOnce(o.Field.column)
+				query.ctx.AppendFieldOnce(order.Field.column)
 			}
 		}
 	}
@@ -540,27 +540,27 @@ func (p *categoryPager) applyOrder(query *CategoryQuery) *CategoryQuery {
 }
 
 func (p *categoryPager) orderExpr(query *CategoryQuery) sql.Querier {
-	for _, o := range p.order {
-		switch o.Field.column {
+	for _, order := range p.order {
+		switch order.Field.column {
 		case CategoryOrderFieldTodosCount.column:
-			direction := o.Direction
+			direction := order.Direction
 			if p.reverse {
 				direction = direction.Reverse()
 			}
-			query = query.Order(o.Field.toTerm(direction.OrderTermOption()))
+			query = query.Order(order.Field.toTerm(direction.OrderTermOption()))
 		default:
 			if len(query.ctx.Fields) > 0 {
-				query.ctx.AppendFieldOnce(o.Field.column)
+				query.ctx.AppendFieldOnce(order.Field.column)
 			}
 		}
 	}
 	return sql.ExprFunc(func(b *sql.Builder) {
-		for _, o := range p.order {
-			direction := o.Direction
+		for _, order := range p.order {
+			direction := order.Direction
 			if p.reverse {
 				direction = direction.Reverse()
 			}
-			b.Ident(o.Field.column).Pad().WriteString(string(direction))
+			b.Ident(order.Field.column).Pad().WriteString(string(direction))
 			b.Comma()
 		}
 		direction := entgql.OrderDirectionAsc
@@ -850,11 +850,11 @@ func WithFriendshipOrder(order *FriendshipOrder) FriendshipPaginateOption {
 	}
 	o := *order
 	return func(pager *friendshipPager) error {
-		if err := o.Direction.Validate(); err != nil {
+		if err := order.Direction.Validate(); err != nil {
 			return err
 		}
-		if o.Field == nil {
-			o.Field = DefaultFriendshipOrder.Field
+		if order.Field == nil {
+			order.Field = DefaultFriendshipOrder.Field
 		}
 		pager.order = &o
 		return nil
@@ -1099,11 +1099,11 @@ func WithGroupOrder(order *GroupOrder) GroupPaginateOption {
 	}
 	o := *order
 	return func(pager *groupPager) error {
-		if err := o.Direction.Validate(); err != nil {
+		if err := order.Direction.Validate(); err != nil {
 			return err
 		}
-		if o.Field == nil {
-			o.Field = DefaultGroupOrder.Field
+		if order.Field == nil {
+			order.Field = DefaultGroupOrder.Field
 		}
 		pager.order = &o
 		return nil
@@ -1348,11 +1348,11 @@ func WithPetOrder(order *PetOrder) PetPaginateOption {
 	}
 	o := *order
 	return func(pager *petPager) error {
-		if err := o.Direction.Validate(); err != nil {
+		if err := order.Direction.Validate(); err != nil {
 			return err
 		}
-		if o.Field == nil {
-			o.Field = DefaultPetOrder.Field
+		if order.Field == nil {
+			order.Field = DefaultPetOrder.Field
 		}
 		pager.order = &o
 		return nil
@@ -1593,8 +1593,8 @@ type TodoPaginateOption func(*todoPager) error
 // WithTodoOrder configures pagination ordering.
 func WithTodoOrder(order []*TodoOrder) TodoPaginateOption {
 	return func(pager *todoPager) error {
-		for _, o := range order {
-			if err := o.Direction.Validate(); err != nil {
+		for _, order := range order {
+			if err := order.Direction.Validate(); err != nil {
 				return err
 			}
 		}
@@ -1627,9 +1627,9 @@ func newTodoPager(opts []TodoPaginateOption, reverse bool) (*todoPager, error) {
 			return nil, err
 		}
 	}
-	for i, o := range pager.order {
-		if i > 0 && o.Field == pager.order[i-1].Field {
-			return nil, fmt.Errorf("duplicate order direction %q", o.Direction)
+	for i, order := range pager.order {
+		if i > 0 && order.Field == pager.order[i-1].Field {
+			return nil, fmt.Errorf("duplicate order direction %q", order.Direction)
 		}
 	}
 	return pager, nil
@@ -1656,9 +1656,9 @@ func (p *todoPager) applyCursors(query *TodoQuery, after, before *Cursor) (*Todo
 		idDirection = entgql.OrderDirectionDesc
 	}
 	fields, directions := make([]string, 0, len(p.order)), make([]OrderDirection, 0, len(p.order))
-	for _, o := range p.order {
-		fields = append(fields, o.Field.column)
-		direction := o.Direction
+	for _, order := range p.order {
+		fields = append(fields, order.Field.column)
+		direction := order.Direction
 		if p.reverse {
 			direction = direction.Reverse()
 		}
@@ -1681,20 +1681,20 @@ func (p *todoPager) applyCursors(query *TodoQuery, after, before *Cursor) (*Todo
 
 func (p *todoPager) applyOrder(query *TodoQuery) *TodoQuery {
 	var defaultOrdered bool
-	for _, o := range p.order {
-		direction := o.Direction
+	for _, order := range p.order {
+		direction := order.Direction
 		if p.reverse {
 			direction = direction.Reverse()
 		}
-		query = query.Order(o.Field.toTerm(direction.OrderTermOption()))
-		if o.Field.column == DefaultTodoOrder.Field.column {
+		query = query.Order(order.Field.toTerm(direction.OrderTermOption()))
+		if order.Field.column == DefaultTodoOrder.Field.column {
 			defaultOrdered = true
 		}
-		switch o.Field.column {
+		switch order.Field.column {
 		case TodoOrderFieldParentStatus.column, TodoOrderFieldChildrenCount.column, TodoOrderFieldCategoryText.column:
 		default:
 			if len(query.ctx.Fields) > 0 {
-				query.ctx.AppendFieldOnce(o.Field.column)
+				query.ctx.AppendFieldOnce(order.Field.column)
 			}
 		}
 	}
@@ -1709,27 +1709,27 @@ func (p *todoPager) applyOrder(query *TodoQuery) *TodoQuery {
 }
 
 func (p *todoPager) orderExpr(query *TodoQuery) sql.Querier {
-	for _, o := range p.order {
-		switch o.Field.column {
+	for _, order := range p.order {
+		switch order.Field.column {
 		case TodoOrderFieldParentStatus.column, TodoOrderFieldChildrenCount.column, TodoOrderFieldCategoryText.column:
-			direction := o.Direction
+			direction := order.Direction
 			if p.reverse {
 				direction = direction.Reverse()
 			}
-			query = query.Order(o.Field.toTerm(direction.OrderTermOption()))
+			query = query.Order(order.Field.toTerm(direction.OrderTermOption()))
 		default:
 			if len(query.ctx.Fields) > 0 {
-				query.ctx.AppendFieldOnce(o.Field.column)
+				query.ctx.AppendFieldOnce(order.Field.column)
 			}
 		}
 	}
 	return sql.ExprFunc(func(b *sql.Builder) {
-		for _, o := range p.order {
-			direction := o.Direction
+		for _, order := range p.order {
+			direction := order.Direction
 			if p.reverse {
 				direction = direction.Reverse()
 			}
-			b.Ident(o.Field.column).Pad().WriteString(string(direction))
+			b.Ident(order.Field.column).Pad().WriteString(string(direction))
 			b.Comma()
 		}
 		direction := entgql.OrderDirectionAsc
@@ -2067,11 +2067,11 @@ func WithUserOrder(order *UserOrder) UserPaginateOption {
 	}
 	o := *order
 	return func(pager *userPager) error {
-		if err := o.Direction.Validate(); err != nil {
+		if err := order.Direction.Validate(); err != nil {
 			return err
 		}
-		if o.Field == nil {
-			o.Field = DefaultUserOrder.Field
+		if order.Field == nil {
+			order.Field = DefaultUserOrder.Field
 		}
 		pager.order = &o
 		return nil

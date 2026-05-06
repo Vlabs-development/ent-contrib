@@ -305,7 +305,7 @@ input CreateCategoryInput {
   types: CategoryTypesInput
   duration: Duration
   count: Uint64
-  strings: [String!]
+  strings: [String!] @deprecated(reason: "use `string` instead")
   todoIDs: [ID!]
   subCategoryIDs: [ID!]
 }
@@ -1192,7 +1192,7 @@ input UpdateCategoryInput {
   clearDuration: Boolean
   count: Uint64
   clearCount: Boolean
-  strings: [String!]
+  strings: [String!] @deprecated(reason: "use `string` instead")
   appendStrings: [String!]
   clearStrings: Boolean
   addTodoIDs: [ID!]

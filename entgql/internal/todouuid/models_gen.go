@@ -3,6 +3,7 @@
 package todo
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"strconv"
@@ -218,4 +219,18 @@ func (e *OneToManyOrderField) UnmarshalGQL(v any) error {
 
 func (e OneToManyOrderField) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *OneToManyOrderField) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e OneToManyOrderField) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
 }

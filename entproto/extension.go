@@ -161,11 +161,11 @@ func (e *Extension) generate(g *gen.Graph) error {
 					return fmt.Errorf("entproto: failed generating generate.go file for %q: %w", protoFilePath, err)
 				}
 				absTarget, err := filepath.Abs(g.Config.Target)
-			if err != nil {
-				return fmt.Errorf("entproto: failed generating generate.go file for %q: %w", g.Config.Target, err)
-			}
+				if err != nil {
+					return fmt.Errorf("entproto: failed generating generate.go file for %q: %w", g.Config.Target, err)
+				}
 
-			toBase, err := filepath.Rel(abs, absTarget)
+				toBase, err := filepath.Rel(abs, absTarget)
 				if err != nil {
 					return fmt.Errorf("entproto: failed generating generate.go file for %q: %w", protoFilePath, err)
 				}

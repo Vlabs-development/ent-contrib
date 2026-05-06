@@ -9,7 +9,7 @@ require (
 	github.com/alecthomas/kong v1.12.1
 	github.com/go-openapi/inflect v0.21.3
 	github.com/go-viper/mapstructure/v2 v2.4.0
-	github.com/google/addlicense v1.2.0
+	github.com/google/addlicense v1.1.1
 	github.com/google/uuid v1.6.0
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/jhump/protoreflect v1.17.0

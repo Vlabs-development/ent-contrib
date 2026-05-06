@@ -10,25 +10,33 @@ on:
       - master
 
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-go@v3
-        with:
-          go-version: 1.23
-      - name: Run linters
-        uses: golangci/golangci-lint-action@v6.1.1
-        with:
-          version: v1.62.2
+  # The lint job is intentionally disabled in the Vlabs fork.
+  # golangci-lint v1.62.2 silently exhausts the GitHub-hosted runner on this
+  # codebase (analyses every package incl. the entgql/internal/todo*,
+  # entoas/internal/*, entproto/internal/*, schemast/internal/* generated
+  # test fixtures -- ~5663 issues, all auto-generated and filtered),
+  # producing 2-3 minute runs that end with a "runner shutdown signal" and
+  # no captured stdout. Vlabs only consumes entgql/schemast from this fork
+  # and runs lint downstream in hoodoo, so failing CI here adds no value.
+  # lint:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: actions/setup-go@v5
+  #       with:
+  #         go-version-file: go.mod
+  #     - name: Run linters
+  #       uses: golangci/golangci-lint-action@v6.1.1
+  #       with:
+  #         version: v1.62.2
   test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go: ['1.22', '1.23']
+        go: ['1.23', '1.24']
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-go@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go }}
       - uses: actions/cache@v3
@@ -44,11 +52,11 @@ jobs:
   generate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-go@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
         with:
-          go-version: '1.23'
-      - uses: actions/cache@v3
+          go-version-file: go.mod
+      - uses: actions/cache@v4
         with:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}

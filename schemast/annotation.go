@@ -204,7 +204,7 @@ func entGQL(annot schema.Annotation) (ast.Expr, bool, error) {
 		return nil, false, err
 	}
 	var c *ast.CallExpr
-	if m.MutationInputs != nil && len(m.MutationInputs) > 0 {
+	if len(m.MutationInputs) > 0 {
 		args := []ast.Expr{}
 		for _, input := range m.MutationInputs {
 			if input.IsCreate {
