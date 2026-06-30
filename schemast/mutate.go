@@ -16,11 +16,9 @@ package schemast
 
 import (
 	"go/ast"
-	"go/token"
 
 	"entgo.io/ent"
 	"entgo.io/ent/schema"
-	"entgo.io/ent/schema/field"
 )
 
 // Mutator changes a Context.
@@ -59,17 +57,9 @@ func (u *UpsertSchema) Mutate(ctx *Context) error {
 		return err
 	}
 	for _, fld := range u.Fields {
+		// AppendField also adds any import required by the field's Go type.
 		if err := ctx.AppendField(u.Name, fld.Descriptor()); err != nil {
 			return err
-		}
-		if fld.Descriptor().Info.Type == field.TypeUUID {
-			ctx.appendImport(u.Name, "github.com/google/uuid")
-		}
-		// Append any imported struct for JSON fields
-		if fld.Descriptor().Info.Type == field.TypeJSON {
-			if fld.Descriptor().Info.RType != nil && fld.Descriptor().Info.RType.PkgPath != "" {
-				ctx.appendImport(u.Name, fld.Descriptor().Info.RType.PkgPath)
-			}
 		}
 	}
 	for _, edg := range u.Edges {
@@ -115,10 +105,4 @@ func (c *Context) appendReturnItem(k kind, typeName string, item ast.Expr) error
 		return err
 	}
 	return appendToReturn(stmt, k.ifaceSelector, item)
-}
-
-func (c *Context) appendImport(typeName, pkgPath string) {
-	if f, ok := c.newTypes[typeName]; ok {
-		f.Imports = append(f.Imports, &ast.ImportSpec{Path: &ast.BasicLit{Value: pkgPath, Kind: token.STRING}})
-	}
 }
