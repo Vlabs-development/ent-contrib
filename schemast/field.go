@@ -27,6 +27,7 @@ import (
 	"strings"
 
 	"entgo.io/ent/schema/field"
+	"golang.org/x/tools/go/ast/astutil"
 )
 
 // Field converts a *field.Descriptor back into an *ast.CallExpr of the ent field package that can be used
@@ -81,7 +82,33 @@ func (c *Context) AppendField(typeName string, desc *field.Descriptor) error {
 	if err != nil {
 		return err
 	}
-	return c.appendReturnItem(kindField, typeName, newField)
+	if err := c.appendReturnItem(kindField, typeName, newField); err != nil {
+		return err
+	}
+	c.addFieldImport(typeName, desc)
+	return nil
+}
+
+// addFieldImport ensures the package that provides a field's Go type is imported
+// in the file declaring typeName. The import is added explicitly rather than
+// left for goimports to infer from a bare usage such as uuid.UUID{}: as of
+// golang.org/x/tools v0.47.0 goimports mis-resolves such usages to the bare
+// package name ("uuid") instead of its full path ("github.com/google/uuid"),
+// which produces an unbuildable schema and breaks ent codegen.
+func (c *Context) addFieldImport(typeName string, desc *field.Descriptor) {
+	pkgPath := ""
+	if desc.Info.RType != nil {
+		pkgPath = desc.Info.RType.PkgPath
+	}
+	if pkgPath == "" && desc.Info.Type == field.TypeUUID {
+		pkgPath = "github.com/google/uuid"
+	}
+	if pkgPath == "" {
+		return
+	}
+	if file, _, ok := c.lookupTypeDecl(typeName); ok {
+		astutil.AddImport(c.SchemaPackage.Fset, file, pkgPath)
+	}
 }
 
 // RemoveField removes a field from the returned values of the Fields method of type typeName.
